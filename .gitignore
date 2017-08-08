@@ -1,0 +1,20 @@
+# Mac OS X Files/User Data
+**/.DS_Store
+xcuserdata/
+.tags*
+
+# Objects, Libraries, Executables, etc...
+*.dylib
+*.dSYM/
+*.so.*
+*.efi
+*.elf
+*.so
+*.a
+
+# Output Directories
+Target/
+Build/
+build/
+root/
+target/
