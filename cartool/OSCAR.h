@@ -183,11 +183,10 @@ typedef OSEnum(UInt16, CASystemBuildType) {
     kCASystemBuildTypeStable               = 3
 };
 
-typedef struct {
+typedef struct __attribute__((packed)) {
     UInt8 type;
     UInt8 flags;
     UInt16 specialFlags;
-    UInt8 padding;
 
     UInt32 parentEntry; // Parent directory
     UInt32 nextEntry;   // Next Entry in parent
@@ -202,11 +201,10 @@ typedef OSEnum(UInt16, CASystemDirectoryFlags) {
     kCASystemDirectoryFlagAllowsExecute    = 0x4000,
 };
 
-typedef struct CASystemFileEntry {
+typedef struct __attribute__((packed)) {
     UInt8 type;
     UInt8 flags;
     UInt16 specialFlags;
-    UInt8 padding;
     
     UInt32 parentEntry; // Parent directory
     UInt32 nextEntry;   // Next Entry in parent

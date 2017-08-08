@@ -704,6 +704,7 @@ ARCreateInfo *ARCreateArchive(ARSubtype subtype, const OSUTF8Char *rootDirectory
     }
 
     OSOffset entryTableOffset = tocOffset + (sizeof(UInt64) * directory->entryCount);
+    if (subtype == kARSubtypeSystemImage) entryTableOffset = OSAlignUpward(entryTableOffset, 512);
     entryTableOffset += sizeof(UInt32); // Entry Table is offset by 4 bytes
 
     if (!ARCreateSeekInArchive(fd, entryTableOffset))
@@ -723,7 +724,9 @@ ARCreateInfo *ARCreateArchive(ARSubtype subtype, const OSUTF8Char *rootDirectory
         return kOSNullPointer;
 
     OSOffset dataOffset = entryTableOffset + finalEntryOffset;
-    dataOffset = OSAlignUpward(dataOffset, 8);
+
+    if (subtype == kARSubtypeSystemImage) dataOffset = OSAlignUpward(dataOffset, 512);
+    else dataOffset = OSAlignUpward(dataOffset, 8);
 
     if (!ARCreateSeekInArchive(fd, dataOffset))
     {
@@ -892,7 +895,7 @@ bool ARCreateBootX(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, b
 
 bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose, ARCreateDataModifiers *modifiers, CASystemVersionInternal *systemVersion, const OSUTF8Char *partitionInfoPath)
 {
-    ARCreateInfo *stats = ARCreateArchive(kARSubtypeSystemImage, rootDirectory, archive, sizeof(CAHeaderSystemImage) + sizeof(CADataModification), verbose);
+    ARCreateInfo *stats = ARCreateArchive(kARSubtypeSystemImage, rootDirectory, archive, 1024, verbose);
     if (!stats) return false;
 
     CAHeaderSystemImage *header = stats->address;
@@ -901,9 +904,9 @@ bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *arch
     memcpy(&header->systemVersion, systemVersion, sizeof(CASystemVersionInternal));
 
     header->tocOffset = sizeof(CAHeaderSystemImage) + sizeof(CADataModification);
-    header->dataModification = sizeof(CADataModification);
     header->dataSectionOffset = stats->dataOffset;
     header->entryTableOffset = stats->entryOffset;
+    header->dataModification = 512;
 
     if (verbose) fprintf(stdout, "Generating checksums...\n");
     header->dataChecksum = ARCRC32Process(stats->address + sizeof(CAHeaderSystemImage), stats->archiveSize - sizeof(CAHeaderSystemImage));
