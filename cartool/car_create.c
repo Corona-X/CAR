@@ -13,6 +13,7 @@
 
 #define OSAlignUpward(p, s) (((p) + ((s) - 1)) & (~((s) - 1)))
 #define ARAlignEntry(addr)  (((addr) - 5) & (~7)) + 12;
+#define kARBlockSize        512
 
 typedef struct {
     struct ARDirectoryEntry {
@@ -704,7 +705,7 @@ ARCreateInfo *ARCreateArchive(ARSubtype subtype, const OSUTF8Char *rootDirectory
     }
 
     OSOffset entryTableOffset = tocOffset + (sizeof(UInt64) * directory->entryCount);
-    if (subtype == kARSubtypeSystemImage) entryTableOffset = OSAlignUpward(entryTableOffset, 512);
+    if (subtype == kARSubtypeSystemImage) entryTableOffset = OSAlignUpward(entryTableOffset, kARBlockSize);
     entryTableOffset += sizeof(UInt32); // Entry Table is offset by 4 bytes
 
     if (!ARCreateSeekInArchive(fd, entryTableOffset))
@@ -725,7 +726,7 @@ ARCreateInfo *ARCreateArchive(ARSubtype subtype, const OSUTF8Char *rootDirectory
 
     OSOffset dataOffset = entryTableOffset + finalEntryOffset;
 
-    if (subtype == kARSubtypeSystemImage) dataOffset = OSAlignUpward(dataOffset, 512);
+    if (subtype == kARSubtypeSystemImage) dataOffset = OSAlignUpward(dataOffset, kARBlockSize);
     else dataOffset = OSAlignUpward(dataOffset, 8);
 
     if (!ARCreateSeekInArchive(fd, dataOffset))
@@ -895,7 +896,7 @@ bool ARCreateBootX(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, b
 
 bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose, ARCreateDataModifiers *modifiers, CASystemVersionInternal *systemVersion, const OSUTF8Char *partitionInfoPath)
 {
-    ARCreateInfo *stats = ARCreateArchive(kARSubtypeSystemImage, rootDirectory, archive, 1024, verbose);
+    ARCreateInfo *stats = ARCreateArchive(kARSubtypeSystemImage, rootDirectory, archive, 2 * kARBlockSize, verbose);
     if (!stats) return false;
 
     CAHeaderSystemImage *header = stats->address;
@@ -903,10 +904,10 @@ bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *arch
     memcpy(&header->version, kCAHeaderVersionSystem, 4);
     memcpy(&header->systemVersion, systemVersion, sizeof(CASystemVersionInternal));
 
-    header->tocOffset = sizeof(CAHeaderSystemImage) + sizeof(CADataModification);
+    header->tocOffset = 2 * kARBlockSize;
     header->dataSectionOffset = stats->dataOffset;
     header->entryTableOffset = stats->entryOffset;
-    header->dataModification = 512;
+    header->dataModification = kARBlockSize;
 
     if (verbose) fprintf(stdout, "Generating checksums...\n");
     header->dataChecksum = ARCRC32Process(stats->address + sizeof(CAHeaderSystemImage), stats->archiveSize - sizeof(CAHeaderSystemImage));

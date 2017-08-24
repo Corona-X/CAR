@@ -30,17 +30,12 @@
 /* Begin PBXFileReference section */
 		8B80F7401F32AEC3006CE459 /* cartool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cartool; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B80F7431F32AEC3006CE459 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		8B80F74A1F32AEE6006CE459 /* Corona-X.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Corona-X.h"; sourceTree = "<group>"; };
-		8B80F74B1F32AEE6006CE459 /* OSCAR.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSCAR.h; sourceTree = "<group>"; };
-		8B80F74C1F32AEE6006CE459 /* OSCX.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSCX.h; sourceTree = "<group>"; };
-		8B80F74D1F32AEE6006CE459 /* OSTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSTypes.h; sourceTree = "<group>"; };
 		8B80F74E1F32B743006CE459 /* car_show.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = car_show.c; sourceTree = "<group>"; };
 		8B80F74F1F32B743006CE459 /* car_show.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = car_show.h; sourceTree = "<group>"; };
 		8B80F7511F32B74A006CE459 /* car_extract.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = car_extract.c; sourceTree = "<group>"; };
 		8B80F7521F32B74A006CE459 /* car_extract.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = car_extract.h; sourceTree = "<group>"; };
 		8B80F7541F32B751006CE459 /* car_create.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = car_create.c; sourceTree = "<group>"; };
 		8B80F7551F32B751006CE459 /* car_create.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = car_create.h; sourceTree = "<group>"; };
-		8B80F7571F32C9C3006CE459 /* OSVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSVersion.h; sourceTree = "<group>"; };
 		8B80F7581F338043006CE459 /* car.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = car.c; sourceTree = "<group>"; };
 		8B80F7591F338043006CE459 /* car.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = car.h; sourceTree = "<group>"; };
 		8B80F78A1F33FF33006CE459 /* car_crc32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = car_crc32.c; sourceTree = "<group>"; };
@@ -76,11 +71,6 @@
 		8B80F7421F32AEC3006CE459 /* cartool */ = {
 			isa = PBXGroup;
 			children = (
-				8B80F74A1F32AEE6006CE459 /* Corona-X.h */,
-				8B80F74D1F32AEE6006CE459 /* OSTypes.h */,
-				8B80F7571F32C9C3006CE459 /* OSVersion.h */,
-				8B80F74B1F32AEE6006CE459 /* OSCAR.h */,
-				8B80F74C1F32AEE6006CE459 /* OSCX.h */,
 				8B80F7431F32AEC3006CE459 /* main.c */,
 				8B80F74E1F32B743006CE459 /* car_show.c */,
 				8B80F74F1F32B743006CE459 /* car_show.h */,
@@ -255,9 +245,14 @@
 		8B80F7481F32AEC3006CE459 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = 2W4TZ4GHY6;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_OPTIMIZATION_LEVEL = fast;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"kCXRelease=1",
+				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../Source/Kernel/SharedCode/headers";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -265,8 +260,14 @@
 		8B80F7491F32AEC3006CE459 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = 2W4TZ4GHY6;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_OPTIMIZATION_LEVEL = fast;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"kCXRelease=1",
+				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../Source/Kernel/SharedCode/headers";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

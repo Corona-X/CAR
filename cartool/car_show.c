@@ -31,7 +31,7 @@ static bool ARShowContentsInternal(ARSubtype subtype, OSOffset *toc, UInt8 *entr
         {
             case kARSubtype1: {
                 CAEntryS1 *realEntry = (CAEntryS1 *)entry;
-                path = entry + sizeof(CAEntryS1);
+                path = realEntry->path;
 
                 if (showLinks && entryType == kCAEntryTypeLink)
                     memcpy(&linkData, entry, sizeof(CAEntryS1));
@@ -41,7 +41,7 @@ static bool ARShowContentsInternal(ARSubtype subtype, OSOffset *toc, UInt8 *entr
             } break;
             case kARSubtype2:
             case kARSubtypeBootX: {
-                path = entry + sizeof(CAEntryS2);
+                path = (OSUTF8Char *)(entry + sizeof(CAEntryS2));
 
                 if (entryType == kCAEntryTypeDirectory) {
                     path -= (2 * sizeof(UInt64));
@@ -64,11 +64,11 @@ static bool ARShowContentsInternal(ARSubtype subtype, OSOffset *toc, UInt8 *entr
             } break;
             case kARSubtypeSystemImage: {
                 if (entryType == kCAEntryTypeDirectory) {
-                    path = entry + sizeof(CASystemDirectoryEntry);
+                    path = (OSUTF8Char *)(entry + sizeof(CASystemDirectoryEntry));
                     size = 0;
                 } else {
                     size = ((CASystemFileEntry *)entry)->dataSize;
-                    path = entry + sizeof(CASystemFileEntry);
+                    path = (OSUTF8Char *)(entry + sizeof(CASystemFileEntry));
                 }
 
                 if (showLinks && entryType == kCAEntryTypeLink)
