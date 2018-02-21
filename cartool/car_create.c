@@ -558,7 +558,7 @@ static OSOffset ARCreateWriteToCAndEntriesSystemImage(ARSubtype subtype, ARDirec
                 CASystemDirectoryEntry archiveEntry;
 
                 archiveEntry.type = kCAEntryTypeDirectory;
-                archiveEntry.specialFlags = 0xF;
+                archiveEntry.specialFlags = 0xDD;
 
                 if (entry->parent) archiveEntry.parentEntry = entry->parent->entryID;
                 else               archiveEntry.parentEntry = 0;
@@ -588,7 +588,7 @@ static OSOffset ARCreateWriteToCAndEntriesSystemImage(ARSubtype subtype, ARDirec
                 CASystemFileEntry archiveEntry;
 
                 archiveEntry.type = entry->type;
-                archiveEntry.specialFlags = 0xF;
+                archiveEntry.specialFlags = 0xFF;
 
                 if (entry->parent) archiveEntry.parentEntry = entry->parent->entryID;
                 else               archiveEntry.parentEntry = 0;
