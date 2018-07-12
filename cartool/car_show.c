@@ -9,6 +9,12 @@ static bool ARShowContentsInternal(ARSubtype subtype, OSOffset *toc, UInt8 *entr
 
     for (OSIndex i = 0; i < entryCount; i++)
     {
+        if (i & !(*toc))
+        {
+            // We're done
+            break;
+        }
+
         UInt8 *entry = entryTable + (*toc);
         UInt8 entryType = *((UInt8 *)entry);
         toc++;
@@ -158,7 +164,7 @@ static bool ARListContentsInternal(ARArchive *archive, bool showSize, bool showL
 
             toc = archive->address + header->tocOffset;
             ARCopyShared(header);
-            
+
             if (dataModification->compressionCount || dataModification->encryptionCount)
                 fprintf(stderr, "Warning: Archive may contain data modification!\n");
         } break;
@@ -169,6 +175,7 @@ static bool ARListContentsInternal(ARArchive *archive, bool showSize, bool showL
     return success;
 }
 
+// Print SystemImage version string
 static OSUTF8Char *ARShowVersionString(CASystemVersionInternal *version)
 {
     OSUTF8Char *string;
@@ -198,6 +205,7 @@ static OSUTF8Char *ARShowVersionString(CASystemVersionInternal *version)
     return string;
 }
 
+// Print archive's header
 static void ARShowHeader(ARArchive *archive)
 {
     fprintf(stdout, "Archive Signature:     '%.4s'\n", archive->address);
@@ -256,6 +264,14 @@ static void ARShowHeader(ARArchive *archive)
             fprintf(stdout, "System Version:        %s\n", version);
             ARSubtype2Shared(header);
             free(version);
+
+            UInt64 bootEntry = header->bootEntry;
+
+            if (!(~bootEntry)) {
+                fprintf(stdout, "Boot Archive Entry:    None\n");
+            } else {
+                fprintf(stdout, "Boot Archive Entry:    %lu\n", bootEntry);
+            }
 
             CADataModification *dataModification = archive->address + header->dataModification;
             ARDataModificationShared(dataModification);

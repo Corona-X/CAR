@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 
+// Read `size` bytes from `address` into `destination`
 static bool ARExtractFile(const OSUTF8Char *destination, void *address, OSSize size)
 {
     if (ARFileHasDataAtPath(destination))
@@ -36,6 +37,7 @@ static bool ARExtractFile(const OSUTF8Char *destination, void *address, OSSize s
     return true;
 }
 
+// Create symlink with target `link` at `destination`
 static bool ARExtractLink(const OSUTF8Char *destination, const OSUTF8Char *link)
 {
     if (symlink((char *)link, (char *)destination))
@@ -123,15 +125,17 @@ static bool ARExtractArchiveSubtype1(ARArchive *archive, const OSUTF8Char *rootD
 
 bool ARExtractFiles(const OSUTF8Char *archive, const OSUTF8Char *rootDirectory, ARExtractFileInfo *files, OSCount fileCount, bool verbose)
 {
-    return true;
+    return false;
 }
 
 bool ARExtractArchive(const OSUTF8Char *path, const OSUTF8Char *rootDirectory, bool verbose)
 {
     ARArchive *archive = ARArchiveOpen(path);
     if (!archive) return false;
+    bool success = false;
 
-    bool success = ARExtractArchiveSubtype1(archive, rootDirectory, verbose);
+    if (archive->subtype == kARSubtype1)
+        success = ARExtractArchiveSubtype1(archive, rootDirectory, verbose);
 
     return (ARArchiveClose(archive) && success);
 }

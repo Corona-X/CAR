@@ -33,6 +33,7 @@
 //         --build-type <debug|development|release|stable>: specify system build type
 //         --build-id <id>: specify system build id
 //         --partition-info <path>: read partition flag information from the given file
+//         --boot-archive <path>: specify boot archive path
 //   -x: extract archive [archive path]
 //         -v: verbose
 //         -d: output directory
@@ -45,6 +46,7 @@
 //         --show-links: show link location
 //   -l: list paths in archive [archive path(s)]
 //         --show-links: show link location
+//   -u: show this menu
 
 const char *program_name;
 
@@ -91,6 +93,7 @@ __attribute__((noreturn)) static void do_usage(bool print_usage, const char *err
         fprintf(stderr, "  -x: Extract archive                  \n");
         fprintf(stderr, "  -s: Show archive contents            \n");
         fprintf(stderr, "  -l: List entries in archive          \n");
+        fprintf(stderr, "  -u: Show extended usage menu         \n");
     }
 
     exit(EXIT_FAILURE);
@@ -103,7 +106,7 @@ __attribute__((noreturn)) static void do_create(int argc, const char *const *arg
 
     // This is my first time using getopt_long...
     // can you tell? ;)
-    const struct option options[18] = {
+    const struct option options[] = {
         {
             .name = "verbose",
             .has_arg = no_argument,
@@ -189,7 +192,12 @@ __attribute__((noreturn)) static void do_create(int argc, const char *const *arg
             .has_arg = required_argument,
             .flag = NULL,
             .val = 'p'
-        }, {NULL, 0, NULL, 0}
+        }, {
+            .name = "boot-archive",
+            .has_arg = required_argument,
+            .flag = NULL,
+            .val = 'B'
+        },{NULL, 0, NULL, 0}
     };
 
     CASystemVersionInternal system_version;
@@ -200,6 +208,7 @@ __attribute__((noreturn)) static void do_create(int argc, const char *const *arg
 
     const OSUTF8Char *partition_info = NULL;
     const OSUTF8Char *kernel_loader = NULL;
+    const OSUTF8Char *boot_archive = NULL;
     const OSUTF8Char *boot_config = NULL;
     const OSUTF8Char *kernel = NULL;
     bool has_error = false;
@@ -397,6 +406,12 @@ __attribute__((noreturn)) static void do_create(int argc, const char *const *arg
 
                 partition_info = (const OSUTF8Char *)optarg;
             } break;
+            case 'B': {
+                if (subtype != kARSubtypeSystemImage)
+                    do_usage(true, "Only System Images can have a Boot Archive!\n");
+
+                boot_archive = (const OSUTF8Char *)optarg;
+            } break;
             case '?': {
                 fprintf(stderr, "Warning: Encountered unknown option '%c'\n", optopt);
                 fprintf(stderr, "Will ignore.\n");
@@ -425,7 +440,7 @@ __attribute__((noreturn)) static void do_create(int argc, const char *const *arg
             has_error = ARCreateBootX(root_directory, archive, verbose, &data_modifiers, architecture, boot_id, kernel_loader, kernel, boot_config);
         } break;
         case kARSubtypeSystemImage: {
-            has_error = ARCreateSystemImage(root_directory, archive, verbose, &data_modifiers, &system_version, partition_info);
+            has_error = ARCreateSystemImage(root_directory, archive, verbose, &data_modifiers, &system_version, partition_info, boot_archive);
         } break;
         default:
             do_usage(true, "Cannot create an archive with no subtype!\n");
@@ -624,6 +639,49 @@ __attribute__((noreturn)) static void do_list(int argc, const char *const *argv)
     exit(has_error);
 }
 
+__attribute__((noreturn)) static void do_extended_usage(void)
+{
+    fprintf(stderr, "Usage: %s <action> <arguments>         \n\n", program_name);
+    fprintf(stderr, "Where action is one of the following:  \n");
+
+    fprintf(stderr, "-c: create archive [root directory, archive name]\n");
+    fprintf(stderr, "      -v: verbose\n");
+    fprintf(stderr, "      --subtype <1, 2, BootX, SystemImage>: select archive subtype\n");
+    fprintf(stderr, "      --apply-compression <LZMA, LZO>: equivament to --compress-section ToC <type> --compress-section Entries <type> --compress-section Data <type>\n");
+    fprintf(stderr, "      --compress-section {ToC|EntryTable|DataSection, LZMA|LZO}: compress a given section with the given compression type\n");
+    fprintf(stderr, "      --apply-encryption <AES, Serpent>: encrypt the archive. Encrypts all data except the header.\n");
+    fprintf(stderr, "      --sign <certificate>\n");
+    fprintf(stderr, "\n");
+    fprintf(stderr, "      --arch <x86_64|ARMv8>: architecture for Boot-X file\n");
+    fprintf(stderr, "      --bootID <id>: boot ID hex value\n");
+    fprintf(stderr, "      --kernel-loader <path>: specify kernel loader path\n");
+    fprintf(stderr, "      --kernel <path>: specify kernel file\n");
+    fprintf(stderr, "      --boot-config <path>: specify boot config file\n");
+    fprintf(stderr, "\n");
+    fprintf(stderr, "      --os-type <Corona-X|CorOS>: specify system type\n");
+    fprintf(stderr, "      --os-major-version <0-128>: specify major system version\n");
+    fprintf(stderr, "      --os-revision <character>: specify system revision\n");
+    fprintf(stderr, "      --build-type <debug|development|release|stable>: specify system build type\n");
+    fprintf(stderr, "      --build-id <id>: specify system build id\n");
+    fprintf(stderr, "      --partition-info <path>: read partition flag information from the given file\n");
+    fprintf(stderr, "      --boot-archive <path>: specify boot archive path\n");
+    fprintf(stderr, "-x: extract archive [archive path]\n");
+    fprintf(stderr, "      -v: verbose\n");
+    fprintf(stderr, "      -d: output directory\n");
+    fprintf(stderr, "      -o: output path(s)\n");
+    fprintf(stderr, "      -f: file(s)\n");
+    fprintf(stderr, "-s: show archive contents [archive path(s)]\n");
+    fprintf(stderr, "      --show-header: show information about the archive header\n");
+    fprintf(stderr, "      --show-entries: show in-depth information about archive entries\n");
+    fprintf(stderr, "      --show-size: show the size of each entry\n");
+    fprintf(stderr, "      --show-links: show link location\n");
+    fprintf(stderr, "-l: list paths in archive [archive path(s)]\n");
+    fprintf(stderr, "      --show-links: show link location\n");
+    fprintf(stderr, "-u: show this menu\n");
+
+    exit(EXIT_SUCCESS);
+}
+
 int main(int argc, const char *const *argv)
 {
     program_name = basename((char *)argv[0]);
@@ -648,6 +706,7 @@ int main(int argc, const char *const *argv)
         case 'x': do_extract(argc - 1, argv + 1);
         case 's':    do_show(argc - 1, argv + 1);
         case 'l':    do_list(argc - 2, argv + 2);
+        case 'u': do_extended_usage();
         default: do_usage(true, "Invalid first argument!\n");
     }
 }

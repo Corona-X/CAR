@@ -17,6 +17,6 @@ typedef struct {
 bool ARCreateSubtype1(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose);
 bool ARCreateSubtype2(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose, ARCreateDataModifiers *modifiers);
 bool ARCreateBootX(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose, ARCreateDataModifiers *modifiers, UInt16 architecture, UInt32 bootID, const OSUTF8Char *kernelLoaderPath, const OSUTF8Char *kernelPath, const OSUTF8Char *bootConfigPath);
-bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose, ARCreateDataModifiers *modifiers, CASystemVersionInternal *systemVersion, const OSUTF8Char *partitionInfoPath);
+bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose, ARCreateDataModifiers *modifiers, CASystemVersionInternal *systemVersion, const OSUTF8Char *partitionInfoPath, const OSUTF8Char *bootArchivePath);
 
 #endif /* !defined(__car_create__) */

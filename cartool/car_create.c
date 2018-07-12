@@ -894,9 +894,9 @@ bool ARCreateBootX(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, b
     return !failed;
 }
 
-bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose, ARCreateDataModifiers *modifiers, CASystemVersionInternal *systemVersion, const OSUTF8Char *partitionInfoPath)
+bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *archive, bool verbose, ARCreateDataModifiers *modifiers, CASystemVersionInternal *systemVersion, const OSUTF8Char *partitionInfoPath, const OSUTF8Char *bootArchivePath)
 {
-    ARCreateInfo *stats = ARCreateArchive(kARSubtypeSystemImage, rootDirectory, archive, 2 * kARBlockSize, verbose);
+    ARCreateInfo *stats = ARCreateArchive(kARSubtypeSystemImage, rootDirectory, archive, kARBlockSize * 2, verbose);
     if (!stats) return false;
 
     CAHeaderSystemImage *header = stats->address;
@@ -909,12 +909,47 @@ bool ARCreateSystemImage(const OSUTF8Char *rootDirectory, const OSUTF8Char *arch
     header->entryTableOffset = stats->entryOffset;
     header->dataModification = kARBlockSize;
 
+    if (bootArchivePath) {
+        OSOffset *final = stats->address + header->entryTableOffset - sizeof(UInt32);
+        OSOffset *toc = stats->address + header->tocOffset;
+        OSSize skip = strlen((char *)rootDirectory);
+        OSOffset *base = toc;
+
+        while (toc < final)
+        {
+            CAEntryS2 *baseEntry = stats->address + header->entryTableOffset + (*toc);
+
+            if (baseEntry->type == kCAEntryTypeFile)
+            {
+                CASystemFileEntry *entry = (CASystemFileEntry *)baseEntry;
+
+                if (!strcmp((char *)entry->path, (char *)(bootArchivePath + skip)))
+                {
+                    header->bootEntry = toc - base;
+
+                    if (verbose)
+                        fprintf(stdout, "Kernel Loader Entry: %lu\n", header->bootEntry);
+
+                    break;
+                }
+            }
+
+            toc++;
+        }
+    } else {
+        // This means 'none'
+        header->bootEntry = ~((UInt64)0);
+    }
+
     if (verbose) fprintf(stdout, "Generating checksums...\n");
     header->dataChecksum = ARCRC32Process(stats->address + sizeof(CAHeaderSystemImage), stats->archiveSize - sizeof(CAHeaderSystemImage));
 
+    // Offset into the header for the checksum (ignored during calculation)
+    UInt32 headerChecksumOffset = sizeof(CAHeaderSystemImage) - (3 * sizeof(UInt64));
+
     header->headerChecksum = ARCRC32Init();
-    header->headerChecksum = ARCRC32Update(header->headerChecksum, header, sizeof(CAHeaderSystemImage) - (3 * sizeof(UInt64)));
-    header->headerChecksum = ARCRC32Update(header->headerChecksum, header + (sizeof(CAHeaderSystemImage) - (3 * sizeof(UInt64))), 2 * sizeof(UInt64));
+    header->headerChecksum = ARCRC32Update(header->headerChecksum, header, headerChecksumOffset);
+    header->headerChecksum = ARCRC32Update(header->headerChecksum, header + headerChecksumOffset, kARBlockSize - (headerChecksumOffset + sizeof(UInt32)));
     header->headerChecksum = ARCRC32Finalize(header->headerChecksum);
 
     if (verbose) printf("header: 0x%08X\ndata: 0x%08X\n", header->headerChecksum, header->dataChecksum);
