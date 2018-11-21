@@ -111,7 +111,7 @@
 		8B80F7381F32AEC3006CE459 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0810;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Corona Industries LTD";
 				TargetAttributes = {
 					8B80F73F1F32AEC3006CE459 = {
